@@ -1,47 +1,15 @@
 import React, { useEffect, useRef, useState } from "react";
 import type { SymbolKey, WinningSymbolKey } from "../types";
-
-const SYMBOLS: SymbolKey[] = ["🍒", "🍋", "🔔", "🍇", "⭐", "💎"];
-const WINNING_SYMBOLS: SymbolKey[] = ["🍒", "🍒", "🍒", "🍒", "⭐", "💎"];
-
-const PAYOUTS: Record<SymbolKey, number> = {
-  "🍒": 2,
-  "🍋": 3,
-  "🔔": 4,
-  "🍇": 5,
-  "⭐": 8,
-  "💎": 20,
-};
-
-const WINNING_PAYOUTS: Record<WinningSymbolKey, number> = {
-  "🍒": 2,
-  "⭐": 8,
-  "💎": 20,
-};
-const PAYLINES = [
-  [0, 1, 2, 3, 4], // top row
-  [5, 6, 7, 8, 9], // middle row
-  [10, 11, 12, 13, 14], // bottom row
-  [0, 6, 12, 8, 4], // diagonal top-left to bottom-right
-  [10, 6, 2, 8, 14], // diagonal bottom-left to top-right
-];
-
-const WINNING_PAYLINES = [
-  [0, 1, 2, 3, 4], // top row
-  [5, 6, 7, 8, 9], // middle row
-  [10, 11, 12, 13, 14], // bottom row
-  [0, 6, 12, 8, 4], // diagonal top-left to bottom-right
-  [10, 6, 2, 8, 14], // diagonal bottom-left to top-right
-  [0, 1, 7, 13, 14], // V shape
-  [10, 11, 7, 3, 4], // inverted V shape
-  [5, 1, 2, 3, 9], // small n shape
-  [5, 11, 12, 13, 9], // inverted small n shape
-  [0, 6, 7, 8, 14], // zigzag down
-  [10, 6, 7, 8, 4], // zigzag up
-  [2, 3, 7, 11, 12], // middle cross
-];
-
-const PAYLINES_MULTIPLIER = 5; // each payline pays this multiplier
+import ReelCard from "./ReelCard";
+import {
+  PAYLINES,
+  PAYLINES_MULTIPLIER,
+  PAYOUTS,
+  SYMBOLS,
+  WINNING_PAYLINES,
+  WINNING_PAYOUTS,
+  WINNING_SYMBOLS,
+} from "../const";
 
 const SlotGame: React.FC = () => {
   const [balance, setBalance] = useState<number>(50);
@@ -212,21 +180,11 @@ const SlotGame: React.FC = () => {
         </div>
         {/* Display reels here */}
         <div className="bg-white/3 p-3 rounded-lg border border-white/5 mb-4">
-          <div className="grid grid-cols-5 gap-2 sm:gap-3 text-3xl sm:text-4xl text-center">
-            {reels.map((symbol, idx) => {
-              const isWinning = winningLines.some((line) => line.includes(idx));
-              return (
-                <div
-                  key={idx}
-                  className={`py-6 rounded-lg bg-white/5 backdrop-blur flex items-center justify-center text-xl sm:text-5xl ${
-                    spinning ? "reel-spin" : ""
-                  } ${isWinning ? "win-glow" : ""}`}
-                >
-                  {symbol}
-                </div>
-              );
-            })}
-          </div>
+          <ReelCard
+            reels={reels}
+            spinning={spinning}
+            winningLines={winningLines}
+          />
         </div>
         {/* Bottom section for buttons */}
         <div className="flex flex-col sm:flex-row gap-3">
