@@ -113,11 +113,25 @@ const SlotGame: React.FC = () => {
   };
 
   const makeGameWinningMode = () => {
-    setWinningModeActivated(true);
-    setSymbols(WINNING_SYMBOLS);
-    setPayouts(WINNING_PAYOUTS as Record<SymbolKey, number>);
-    setPayLines(WINNING_PAYLINES);
-    setMessage("Winning mode activated! Try your luck!");
+    setWinningModeActivated((prev) => {
+      const newMode = !prev;
+
+      if (newMode) {
+        // Switching to Winning Mode
+        setSymbols(WINNING_SYMBOLS);
+        setPayouts(WINNING_PAYOUTS as Record<SymbolKey, number>);
+        setPayLines(WINNING_PAYLINES);
+        setMessage("🎉 Winning mode activated! Try your luck!");
+      } else {
+        // Switching back to Standard Mode
+        setSymbols(SYMBOLS);
+        setPayouts(PAYOUTS);
+        setPayLines(PAYLINES);
+        setMessage("Standard mode activated. Good luck!");
+      }
+
+      return newMode;
+    });
   };
 
   return (
@@ -127,26 +141,34 @@ const SlotGame: React.FC = () => {
           <h1 className="text-xl sm:text-2xl font-semibold text-white mb-2 flex items-center gap-3">
             🎰 5x3 Slot Demo
           </h1>
-          {winningModeActivated && (
-            <span className="text-xs bg-purple-600 text-white px-2 py-1 rounded-full">
-              Winning Mode
-            </span>
-          )}
-        </div>
-        <p className="text-sm text-gray-300 mb-4">
-          Your Balance:{" "}
-          <span className="font-medium text-white">${balance}</span>
-        </p>
-        {/* add winning mode switcher button for testing */}
-        {winningModeActivated && (
           <button
-            onClick={makeGameWinningMode}
-            className="mb-4 px-3 py-1.5 rounded-md bg-purple-600 text-white text-sm cursor-pointer hover:bg-purple-700"
+            type="button"
+            role="switch"
+            aria-checked={winningModeActivated}
+            onClick={() => makeGameWinningMode()}
             disabled={spinning}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+              winningModeActivated
+                ? "bg-purple-600 focus:ring-purple-500"
+                : "bg-gray-300 dark:bg-gray-600 focus:ring-indigo-500"
+            } ${spinning ? "opacity-50 cursor-not-allowed" : ""}`}
           >
-            Activate Winning Mode
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition-transform duration-200 ease-in-out ${
+                winningModeActivated ? "translate-x-5" : "translate-x-0"
+              }`}
+            />
           </button>
-        )}
+        </div>
+        <div className="flex items-center justify-between mb-2">
+          <p className="text-sm text-gray-300 mb-4">
+            Your Balance:{" "}
+            <span className="font-medium text-white">${balance}</span>
+          </p>
+          <span className="text-xs bg-purple-600 text-white px-2 py-1 rounded-full">
+            {winningModeActivated ? "Winning Mode" : "Standard Mode"}
+          </span>
+        </div>
 
         {/* Bet controls */}
         <div className="flex flex-wrap gap-2 items-center mb-4">
@@ -211,6 +233,11 @@ const SlotGame: React.FC = () => {
         <div className="mt-4 text-xs text-gray-400">
           <span className="text-red-400">Rules</span>: 5 paylines (3
           horizontals, 2 diagonals). 5 of a kind pays multiplier × bet.
+        </div>
+        <div className="mt-4 text-xs text-gray-400">
+          <span className="text-red-400">Hint</span>: Switch the game mode to
+          winning mode to increase the chance of winning. Use toggle button on
+          the top right.
         </div>
       </div>
     </div>

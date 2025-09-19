@@ -9,6 +9,23 @@ It features:
 - Highlighted **winning paylines** with glowing animation.
 - Responsive, mobile-friendly design.
 - Reset functionality to restart the game.
+- Two Play Modes: Standard & Winning
+
+---
+
+# 🎮 Game Modes
+
+The slot game supports two modes of play:
+
+- Standard Mode
+
+  - Default mode.
+  - Very low chance of hitting winning paylines (realistic slot odds).
+  - Good for simulating a real slot machine.
+
+- Winning Mode
+  - Activated using the Winning Mode toggle in the UI.
+  - Greatly increases the chance of winning (90%+).
 
 ---
 
@@ -81,24 +98,6 @@ http://localhost:5173
 
 ---
 
-🎮 How to win
-
-- Since the game uses 6 different symbols, the chance of winning is less than 0.5%, making it rare to see the glowing win effect. To solve this, I added a Winning Mode switcher button, which increases the win rate to over 90%. To enable this feature, simply add a **!** in the code inside SlotGame.tsx at line 173:
-
-```js
-{
-  !winningModeActivated && (
-    <button
-      onClick={makeGameWinningMode}
-      className="mb-4 px-3 py-1.5 rounded-md bg-purple-600 text-white text-sm cursor-pointer hover:bg-purple-700"
-      disabled={spinning}
-    >
-      Activate Winning Mode
-    </button>
-  );
-}
-```
-
 📜 Rules
 
 - 5 paylines: 3 horizontal + 2 diagonal.
@@ -110,4 +109,5 @@ http://localhost:5173
 - Balance decreases by your bet each spin, and increases if you win.
 
 ---
+
 # casino-slot-game-demo
