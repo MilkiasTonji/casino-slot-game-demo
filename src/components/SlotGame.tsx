@@ -14,18 +14,35 @@ import {
 const SlotGame: React.FC = () => {
   const [balance, setBalance] = useState<number>(50);
   const [bet, setBet] = useState<number>(1);
-  const [reels, setReels] = useState<SymbolKey[]>(Array(15).fill("🍒"));
-  const [spinning, setSpinning] = useState<boolean>(false);
-  const [message, setMessage] = useState<string>("Good luck!");
-  const [winningLines, setWinningLines] = useState<number[][]>([]);
   const [symbols, setSymbols] = useState<SymbolKey[] | WinningSymbolKey[]>(
     SYMBOLS
   );
+  const [spinning, setSpinning] = useState<boolean>(false);
+  const [message, setMessage] = useState<string>("Good luck!");
+  const [winningLines, setWinningLines] = useState<number[][]>([]);
+
   const [payouts, setPayouts] =
     useState<Record<SymbolKey | WinningSymbolKey, number>>(PAYOUTS);
   const [payLines, setPayLines] = useState<number[][]>(PAYLINES);
   const [winningModeActivated, setWinningModeActivated] =
     useState<boolean>(false);
+
+  const [reelSpinning, setReelSpinning] = useState<boolean[]>(
+    Array(5).fill(false) // 5 reels for spinning step by step
+  );
+
+  const randomSymbol = (): SymbolKey => {
+    const sym = symbols[Math.floor(Math.random() * symbols.length)];
+    return sym;
+  };
+
+  const generateReelStrip = (length = 15): SymbolKey[] => {
+    return Array.from({ length }, randomSymbol);
+  };
+
+  const [reels, setReels] = useState<SymbolKey[][]>(
+    Array.from({ length: 5 }, () => generateReelStrip())
+  );
 
   const timersRef = useRef<number[]>([]);
 
@@ -43,10 +60,16 @@ const SlotGame: React.FC = () => {
     };
   }, []);
 
-  const randomSymbol = (): SymbolKey => {
-    const sym = symbols[Math.floor(Math.random() * symbols.length)];
-    console.log("Random symbol picked--------", sym);
-    return sym;
+  const newReelsFlattened = (reels: SymbolKey[][]): SymbolKey[] => {
+    const cols = reels.length;
+    const rows = reels[0]?.length ?? 3;
+    const flat: SymbolKey[] = [];
+    for (let row = 0; row < rows; row++) {
+      for (let col = 0; col < cols; col++) {
+        flat.push(reels[col]?.[row] ?? (symbols[0] as SymbolKey));
+      }
+    }
+    return flat;
   };
 
   const spin = () => {
@@ -65,14 +88,39 @@ const SlotGame: React.FC = () => {
     setWinningLines([]);
     setBalance((b) => b - bet);
 
+    // play spin sound and start all cols spinning
     spinSound.current?.play();
+    setReelSpinning(Array(5).fill(true));
 
-    const newSymbols: SymbolKey[] = Array.from({ length: 15 }, randomSymbol);
-    setTimeout(() => {
-      setReels(newSymbols);
-      processSpinResult(newSymbols);
-      setSpinning(false);
-    }, 1500);
+    // stop reels one by one
+    reels.forEach((_, colIdx) => {
+      setTimeout(() => {
+        const newReel = Array.from({ length: 3 }, randomSymbol);
+        setReels((prev) => {
+          const copy = [...prev];
+          copy[colIdx] = newReel;
+          return copy;
+        });
+
+        // stop animation for this reel
+        setReelSpinning((prev) => {
+          const updated = [...prev];
+          updated[colIdx] = false;
+          return updated;
+        });
+
+        // last reel stopped, evaluate result
+        if (colIdx === reels.length - 1) {
+          setSpinning(false);
+          setReels((prev) => {
+            const copy = [...prev];
+            copy[colIdx] = newReel;
+            processSpinResult(newReelsFlattened(copy));
+            return copy;
+          });
+        }
+      }, 800 + colIdx * 600); // calculated delay based on index
+    });
   };
 
   //   Process the result of the spin or evealute the randomly generated reels
@@ -80,7 +128,7 @@ const SlotGame: React.FC = () => {
     // uses randomly generated reels to determine wins
     const wins: number[][] = [];
     let totalWin = 0;
-    console.log("Evaluating spin randomly generated reels--------", newReels);
+    // console.log("Evaluating spin randomly generated reels--------", newReels);
 
     payLines.forEach((line) => {
       const symbols = line.map((i) => newReels[i]);
@@ -106,7 +154,7 @@ const SlotGame: React.FC = () => {
   const resetGame = () => {
     setBalance(50);
     setBet(1);
-    setReels(Array(15).fill("🍒"));
+    setReels(Array.from({ length: 5 }, () => Array(3).fill("🍒" as SymbolKey)));
     setMessage("Game reset. Good luck!");
     setSpinning(false);
     setWinningLines([]);
@@ -206,6 +254,7 @@ const SlotGame: React.FC = () => {
             reels={reels}
             spinning={spinning}
             winningLines={winningLines}
+            reelSpinning={reelSpinning}
           />
         </div>
         {/* Bottom section for buttons */}
@@ -213,13 +262,17 @@ const SlotGame: React.FC = () => {
           <button
             onClick={spin}
             disabled={spinning}
-            className={`flex-1 py-3 rounded-lg font-semibold transition-opacity ${
+            className={`flex-1 py-3 rounded-lg font-semibold transition-opacity relative ${
               spinning
                 ? "bg-white/10 text-gray-200 opacity-60 cursor-not-allowed"
                 : "bg-amber-500 text-white hover:bg-amber-600 cursor-pointer"
             }`}
           >
-            {spinning ? "Spinning..." : "Spin"}
+            {spinning ? (
+              <div className="w-6 h-6 border-4 border-t-4 border-l-4 border-white border-t-amber-500 border-l-amber-500 rounded-full animate-spin mx-auto"></div>
+            ) : (
+              "Spin"
+            )}
           </button>
 
           <button

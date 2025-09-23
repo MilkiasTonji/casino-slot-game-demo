@@ -2,31 +2,42 @@ import React from "react";
 import type { SymbolKey } from "../types";
 
 type ReelCardProps = {
-  reels: SymbolKey[];
+  reels: SymbolKey[][]; // each reel = 3 symbols
   spinning: boolean;
   winningLines: number[][];
+  reelSpinning: boolean[];
 };
 
 const ReelCard: React.FC<ReelCardProps> = ({
   reels,
-  winningLines,
   spinning,
+  winningLines,
+  reelSpinning,
 }) => {
   return (
     <div className="grid grid-cols-5 gap-2 sm:gap-3 text-3xl sm:text-4xl text-center">
-      {reels.map((symbol, idx) => {
-        const isWinning = winningLines.some((line) => line.includes(idx));
-        return (
+      {reels.map((reel, colIdx) => (
+        <div key={colIdx} className="reel-wrapper overflow-hidden">
           <div
-            key={idx}
-            className={`py-6 rounded-lg bg-white/5 backdrop-blur flex items-center justify-center text-xl sm:text-5xl ${
-              spinning ? "reel-spin" : ""
-            } ${isWinning ? "win-glow" : ""}`}
+            className={`reel-strip ${reelSpinning[colIdx] ? "reel-spin" : ""}`}
           >
-            {symbol}
+            {reel.map((symbol, rowIdx) => {
+              const flatIndex = rowIdx * 5 + colIdx; // just flatten to match paylines
+              const isWinning = winningLines.some((line) =>
+                line.includes(flatIndex)
+              );
+              return (
+                <div
+                  key={rowIdx}
+                  className={`symbol ${isWinning ? "win-glow" : ""}`}
+                >
+                  {symbol}
+                </div>
+              );
+            })}
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 };

@@ -2,7 +2,7 @@ import type { SymbolKey, WinningSymbolKey } from "../types";
 
 
 export const SYMBOLS: SymbolKey[] = ["🍒", "🍋", "🔔", "🍇", "⭐", "💎"];
-export const WINNING_SYMBOLS: SymbolKey[] = ["🍒", "🍒", "🍒", "🍒", "⭐", "💎"];
+export const WINNING_SYMBOLS: WinningSymbolKey[] = ["🍒", "🍒", "🍒", "🍒", "⭐", "💎"];
 
 export const PAYOUTS: Record<SymbolKey, number> = {
   "🍒": 2,
